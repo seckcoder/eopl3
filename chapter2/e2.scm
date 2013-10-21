@@ -139,6 +139,47 @@
                     (interior-node-sum? bt-sum))
                   (bintree-sums bt))))))
 
+(define list-of
+  (lambda (pred)
+    (lambda (val)
+      (or (null? val)
+          (and (pair? val)
+               (pred (car val))
+               ((list-of pred) (cdr val)))))))
+
+(define-datatype
+  red-blue-tree red-blue-tree?
+  (red-node
+    (rbtree-left red-blue-tree?)
+    (rbtree-right red-blue-tree?))
+  (blue-node
+    (rbtree red-blue-tree?)
+    (rbtrees (list-of red-blue-tree?)))
+  (rbtree-leaf-node
+    (Int integer?)))
+
+(define rbtree-transform
+  (lambda (rbtree)
+    (let loop ((rbtree rbtree)
+               (red-node-num 0))
+    (cases
+      red-blue-tree rbtree
+      (rbtree-leaf-node (Int)
+                 (rbtree-leaf-node red-node-num))
+      (red-node (rbtree-left rbtree-right)
+                (red-node
+                  (loop rbtree-left
+                        (+ red-node-num 1))
+                  (loop rbtree-right
+                        (+ red-node-num 1))))
+      (blue-node (rbtree rbtrees)
+                 (blue-node (loop rbtree
+                                  red-node-num)
+                            (map (lambda (rbtree)
+                                   (loop rbtree red-node-num))
+                                 rbtrees)))))))
+
+
 (equal??
   (has-binding? (non-empty-env 'x 3 (empty-env)) 'x)
   #t)
@@ -179,3 +220,27 @@
   'foo)
 
 (report-unit-tests-completed 'max-interior)
+
+(define rbtree1
+  (rbtree-leaf-node 3))
+
+(define rbtree2
+  (rbtree-leaf-node 2))
+
+(define rbtree3
+  (blue-node rbtree1 (list rbtree2)))
+
+(define rbtree4
+  (red-node rbtree1 rbtree2))
+
+(define rbtree5
+  (red-node rbtree3 rbtree4))
+
+(define rbtree6
+  (blue-node rbtree5 '()))
+
+(define rbtree7
+  (red-node rbtree6 rbtree5))
+
+(rbtree-transform rbtree7)
+

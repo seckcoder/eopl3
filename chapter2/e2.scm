@@ -13,7 +13,7 @@
     (empty-env)
     (non-empty-env
       (var symbol?)
-      (value value?)
+      (value any-thing?)
       (base-env env?)))
 
   (define value?

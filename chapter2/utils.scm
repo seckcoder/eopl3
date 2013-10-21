@@ -2,7 +2,7 @@
 
   ;; a very simple macro for inline testing
 
-  (provide equal?? report-unit-tests-completed)
+  (provide equal?? report-unit-tests-completed any-thing?)
 
   ;; simple-minded magic for tests
   (define-syntax equal??
@@ -17,4 +17,7 @@
     (lambda (fn-name)
       (eopl:printf "unit tests completed: ~s~%" fn-name)))
 
+  (define any-thing?
+    (lambda (v)
+      #t))
 )

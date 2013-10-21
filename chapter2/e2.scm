@@ -243,4 +243,3 @@
   (red-node rbtree6 rbtree5))
 
 (rbtree-transform rbtree7)
-

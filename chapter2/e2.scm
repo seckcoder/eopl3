@@ -133,11 +133,11 @@
 (define max-interior
   (lambda (bt)
     (interior-node-sum-symbol (mmax (lambda (bt-sum1 bt-sum2)
-            (> (bintree-sum->num bt-sum1)
-               (bintree-sum->num bt-sum2)))
-          (filter (lambda (bt-sum)
-                    (interior-node-sum? bt-sum))
-                  (bintree-sums bt))))))
+                                      (> (bintree-sum->num bt-sum1)
+                                         (bintree-sum->num bt-sum2)))
+                                    (filter (lambda (bt-sum)
+                                              (interior-node-sum? bt-sum))
+                                            (bintree-sums bt))))))
 
 (define list-of
   (lambda (pred)
@@ -162,23 +162,78 @@
   (lambda (rbtree)
     (let loop ((rbtree rbtree)
                (red-node-num 0))
-    (cases
-      red-blue-tree rbtree
-      (rbtree-leaf-node (Int)
-                 (rbtree-leaf-node red-node-num))
-      (red-node (rbtree-left rbtree-right)
-                (red-node
-                  (loop rbtree-left
-                        (+ red-node-num 1))
-                  (loop rbtree-right
-                        (+ red-node-num 1))))
-      (blue-node (rbtree rbtrees)
-                 (blue-node (loop rbtree
-                                  red-node-num)
-                            (map (lambda (rbtree)
-                                   (loop rbtree red-node-num))
-                                 rbtrees)))))))
+      (cases
+        red-blue-tree rbtree
+        (rbtree-leaf-node (Int)
+                          (rbtree-leaf-node red-node-num))
+        (red-node (rbtree-left rbtree-right)
+                  (red-node
+                    (loop rbtree-left
+                          (+ red-node-num 1))
+                    (loop rbtree-right
+                          (+ red-node-num 1))))
+        (blue-node (rbtree rbtrees)
+                   (blue-node (loop rbtree
+                                    red-node-num)
+                              (map (lambda (rbtree)
+                                     (loop rbtree red-node-num))
+                                   rbtrees)))))))
 
+
+; 2.27
+; ...
+
+; 2.28
+; 2.29 ...
+;
+; 2.30
+; in e2-30.scm
+
+; 2.31
+
+(define-datatype
+  prefix-exp prefix-exp?
+  (const-exp
+    (num integer?))
+  (diff-exp
+    (operand1 prefix-exp?)
+    (operand2 prefix-exp?)))
+
+
+(define parse-prefix-list
+  (lambda (datum)
+    (parse-prefix-exp datum)))
+
+(define extract-prefix-exp
+  (lambda (exps)
+    (if (null? exps)
+      (eopl:error 'extract-prefix-exp "parse prefix exp failed:exp ~s too short" exps)
+      (let ((exp (car exps))
+            (rest-exps (cdr exps)))
+        (cond ((integer? exp)
+               (list (const-exp exp) rest-exps))
+              ((eq? exp '-)
+               (let ((result (extract-prefix-exp rest-exps)))
+                 (let ((prefix-exp1 (car result))
+                       (rest-exps (cadr result)))
+                   (let ((result (extract-prefix-exp rest-exps)))
+                     (let ((prefix-exp2 (car result))
+                           (rest-exps (cadr result)))
+                       (list (diff-exp
+                               prefix-exp1
+                               prefix-exp2)
+                             rest-exps))))))
+              (else
+                (eopl:error 'extract-prefix-exp "parse prefix exp failed:invalid prefix-exp ~s" exps)))))))
+
+(define parse-prefix-exp
+  (lambda (datum)
+    (let ((result (extract-prefix-exp datum)))
+      (let ((prefix-exp (car result))
+            (rest-exps (cadr result)))
+        (if (null? rest-exps)
+          prefix-exp
+          (eopl:error 'parse-prefix-exp "parse prefix exp failed:exp ~s too long" datum))))))
 
 (equal??
   (has-binding? (non-empty-env 'x 3 (empty-env)) 'x)
@@ -243,3 +298,5 @@
   (red-node rbtree6 rbtree5))
 
 (rbtree-transform rbtree7)
+
+(display (parse-prefix-list '(- - 3 2 - 4 - 12 7)))
